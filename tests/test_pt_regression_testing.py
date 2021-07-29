@@ -15,6 +15,7 @@ class TestRegressionTesting(unittest.TestCase):
 
         """
         options.enable_the_selection_of_untested_or_failed_test_ids = False
+        self.previous_enable_intrusive_profiling = options.enable_intrusive_profiling
         options.enable_intrusive_profiling = True
 
     def tearDown(self):
@@ -22,7 +23,7 @@ class TestRegressionTesting(unittest.TestCase):
 
         """
         options.enable_the_selection_of_untested_or_failed_test_ids = True
-        options.enable_intrusive_profiling = False
+        options.enable_intrusive_profiling = self.previous_enable_intrusive_profiling
         self.clean_up()
 
     @staticmethod
@@ -54,12 +55,12 @@ class TestRegressionTesting(unittest.TestCase):
                 fast_method()
 
         # Analyse test results
-        results = pt.verify_benchmark_against_previous_baseline()
+        results: bool = pt.verify_benchmark_against_previous_baseline()
 
         # printing information message about baseline
         print("------------------------------BASELINE------------------------------")
-        print(f"Previous test id :{pt.previous_test_id}")
-        print(f"Current  test id :{pt.current_test_id}")
+        print(f"Previous test id: {pt.previous_test_id}")
+        print(f"Current  test id: {pt.current_test_id}")
         if slow_baseline and fast_baseline is False:
             print(f"Slow baseline has been established first run status: {results}")
         else:

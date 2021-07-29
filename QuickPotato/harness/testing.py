@@ -59,31 +59,21 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
     def test_case_name(self):
         """
         The test case name that has been defined in the unit load test.
-
         Raises
         -------
             AgentCannotFindTestCase If no test case is found
         """
-        if self._no_test_case_mode is False:
-            return self._test_case_name
-
-        else:
-            self._create_and_populate_test_case_database(default_test_case_name)
-            self.current_test_id = self._generate_random_test_id()
-            return default_test_case_name
+        return self._test_case_name
 
     @test_case_name.setter
     def test_case_name(self, value):
         """
         Will update the test case name with the provided value.
-
         When the test case name is changed by a performance unit test.
         The following automatic action will be performed:
-
             - Create the database schema and tables.
             - Find the previous test id
             - Create the current test id
-
         Parameters
         ----------
         value
@@ -103,7 +93,7 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
         self._save_results_to_test_report(boundaries_breached=results)
         return results
 
-    def verify_benchmark_against_previous_baseline(self):
+    def verify_benchmark_against_previous_baseline(self) -> bool:
         results = self._check_difference_between_baseline_benchmark()
         self._save_results_to_test_report(regression_found=results)
         return results
@@ -115,18 +105,23 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
         """
         for _ in range(0, iteration):
             time.sleep(pacing)
-            sample_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-            pf = Profiler()
-            pf.profile_method_under_test(method, *arguments)
 
-            StatisticsInterpreter(
-                # performance_statistics=pf.performance_statistics,
-                # total_response_time=pf.total_response_time,
-                database_name=self.test_case_name,
-                test_id=self.current_test_id,
-                method_name=method.__name__,
-                sample_id=sample_id
-            )
+            # TODO: think about whether or not it is a good idea to use self
+            self.sample_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+            self.profiler = Profiler()
+            self.profiler.profile_method_under_test(method, *arguments)
+            self.function = method
+            self.database_name = self.test_case_name
+            self.test_id = self.current_test_id
+            # StatisticsInterpreter(
+            #     # performance_statistics=pf.performance_statistics,
+            #     # total_response_time=pf.total_response_time,
+            #     database_name=self.test_case_name,
+            #     test_id=self.current_test_id,
+            #     method_name=method.__name__,
+            #     sample_id=sample_id
+            # )
+            StatisticsInterpreter.update(self)
 
     def measure_method_performance(self, method, arguments=None, iteration=1, pacing=0, processes=0, wind_up=0):
         """
@@ -174,7 +169,9 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
             The name of the database_name also known as the test case name
         """
         self.spawn_result_database(database_name)
+        print(f'Calling spawn_performance_statistics_schema({database_name})')
         self.spawn_performance_statistics_schema(database_name)
+        print(f'Called spawn_performance_statistics_schema({database_name})')
         self.spawn_test_report_schema(database_name)
         self.spawn_boundaries_test_evidence_schema(database_name)
         self.spawn_regression_test_evidence_schema(database_name)
@@ -217,7 +214,7 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
             # Two different test cases regression analysis can be done
             return True
 
-    def _inspect_test_results(self, results):
+    def _inspect_test_results(self, results) -> bool:
         """
         Will verify the test results and will give an appropriate output
         and  warning message.
@@ -295,7 +292,7 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
                 )
         return self._inspect_test_results(results)
 
-    def _check_difference_between_baseline_benchmark(self):
+    def _check_difference_between_baseline_benchmark(self) -> bool:
         """
         Will test the benchmark against the baseline.
         The following statistical tests are performed in this method:
@@ -325,5 +322,5 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
 
         else:
             if self.silence_warning_messages is False:
-                print("Warning no baseline found so no regression test performed")
+                print("Warning: No baseline found, so no regression test was performed")
             return True

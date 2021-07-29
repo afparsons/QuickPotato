@@ -1,5 +1,5 @@
 """
-TODO: module-level docstring
+TODO: consider renaming "interpreters" to "listeners" or "handlers"
 """
 
 # standard library
@@ -10,6 +10,7 @@ from abc import abstractmethod
 from typing import Generator, Dict, Union, Tuple
 
 # QuickPotato
+# from QuickPotato import performance_test
 from QuickPotato.database.queries import Crud
 from QuickPotato.profiling.observer import Observer
 from QuickPotato.configuration.management import options
@@ -19,6 +20,8 @@ from QuickPotato.configuration.management import options
 # CLASSES
 # -----------------------------------------------------------------------------
 class Interpreter(Observer):
+    """
+    """
 
     def __init__(
         self,
@@ -41,6 +44,9 @@ class Interpreter(Observer):
         """
         """
         if cls._instance is None:
+            # print('update()', f'{cls=}', f'{subject=}')
+            # print(f'{subject.function=}')
+            print(f'{subject.test_id=}')
             cls._instance = cls(
                 method_name=subject.function.__name__,
                 sample_id=subject.sample_id,
@@ -57,6 +63,7 @@ class Interpreter(Observer):
 
 
 class SimpleInterpreter(Interpreter):
+
     def _update(self, subject) -> None:
         """
         Simply prints information stored by the PerformanceBreakpoint decorator.
@@ -91,12 +98,22 @@ class StatisticsInterpreter(Crud, Interpreter):
         database_name: str,
         test_id: str,
     ) -> None:
-        super(StatisticsInterpreter, self).__init__(
+
+        Crud.__init__(self)
+        Interpreter.__init__(
+            self,
             method_name=method_name,
             sample_id=sample_id,
             database_name=database_name,
             test_id=test_id
         )
+
+        # super(StatisticsInterpreter, self).__init__(
+        #     method_name=method_name,
+        #     sample_id=sample_id,
+        #     database_name=database_name,
+        #     test_id=test_id
+        # )
 
         self.using_server_less_database = bool(self._validate_connection_url(database_name)[0:6] == "sqlite")
         self.epoch_timestamp = datetime.now().timestamp()
@@ -154,6 +171,7 @@ class StatisticsInterpreter(Crud, Interpreter):
                 )
         else:
             # Inserting full payload into server-based database
+            print('send_payload_to_database', f'{payload=}')
             self.insert_performance_statistics(
                 payload=payload,
                 database=self.database_name

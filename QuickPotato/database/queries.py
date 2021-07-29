@@ -100,6 +100,7 @@ class Read(ContextManager):
         :param test_id:
         :return:
         """
+        print('select_response_times:', f'{test_id=}')
         table = ContextManager.performance_statistics_schema()
         engine, connection = self.spawn_connection(database)
         query = select([table.c.sample_id.distinct(), table.c.total_response_time]).where(table.c.test_id == test_id)

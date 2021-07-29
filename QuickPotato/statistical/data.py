@@ -37,7 +37,8 @@ class RawData(Crud):
         -------
 
         """
-        return sum(self._response_times) / len(self._response_times)
+        response_times = self._response_times
+        return sum(response_times) / len(response_times)
 
     def maximum_outlier_in_response_times(self):
         """
