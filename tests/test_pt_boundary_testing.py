@@ -1,7 +1,7 @@
 from QuickPotato.profiling.intrusive import performance_test as pt
 from QuickPotato.database.queries import Crud
 from QuickPotato.configuration.management import options
-from examples.example_code import *
+from examples.non_intrusive_example_code import *
 import unittest
 
 SAMPLE_SIZE = 10
@@ -15,14 +15,14 @@ class TestPerformanceBoundaries(unittest.TestCase):
 
         """
         options.enable_intrusive_profiling = True
-        options.enable_the_selection_of_untested_or_failed_test_ids = False
+        options.enable_policy_to_filter_out_invalid_test_ids = False
 
     def tearDown(self):
         """
 
         """
         options.enable_intrusive_profiling = False
-        options.enable_the_selection_of_untested_or_failed_test_ids = True
+        options.enable_policy_to_filter_out_invalid_test_ids = True
         self.clean_up()
 
     @staticmethod

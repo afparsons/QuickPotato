@@ -26,6 +26,7 @@ class Interpreter(Observer):
     def __init__(
         self,
         method_name: str,
+        test_case_name: str,
         sample_id: str,
         database_name: str,
         test_id: str,
@@ -33,6 +34,7 @@ class Interpreter(Observer):
         """
         """
         self.database_name = database_name
+        self.test_case_name = test_case_name
         self.method_name = method_name
         self.sample_id = sample_id
         self.test_id = test_id
@@ -196,7 +198,7 @@ class StatisticsInterpreter(Crud, Interpreter):
                     yield {
                         "test_id": self.test_id,
                         "sample_id": self.sample_id,
-                        "test_case_name": self.database_name,
+                        "test_case_name": self.test_case_name,
                         "name_of_method_under_test": self.method_name,
                         "epoch_timestamp": self.epoch_timestamp,
                         "human_timestamp": self.human_timestamp,
@@ -219,7 +221,7 @@ class StatisticsInterpreter(Crud, Interpreter):
                     yield {
                         "test_id": self.test_id,
                         "sample_id": self.sample_id,
-                        "test_case_name": self.database_name,
+                        "test_case_name": self.test_case_name,
                         "name_of_method_under_test": self.method_name,
                         "epoch_timestamp": self.epoch_timestamp,
                         "human_timestamp": self.human_timestamp,

@@ -1,7 +1,7 @@
 from QuickPotato.profiling.intrusive import performance_test as pt
 from QuickPotato.database.queries import Crud
 from QuickPotato.configuration.management import options
-from examples.example_code import *
+from examples.non_intrusive_example_code import *
 import unittest
 
 SAMPLE_SIZE = 10
@@ -14,7 +14,7 @@ class TestRegressionTesting(unittest.TestCase):
         """
 
         """
-        options.enable_the_selection_of_untested_or_failed_test_ids = False
+        options.enable_policy_to_filter_out_invalid_test_ids = False
         self.previous_enable_intrusive_profiling = options.enable_intrusive_profiling
         options.enable_intrusive_profiling = True
 
@@ -22,7 +22,7 @@ class TestRegressionTesting(unittest.TestCase):
         """
 
         """
-        options.enable_the_selection_of_untested_or_failed_test_ids = True
+        options.enable_policy_to_filter_out_invalid_test_ids = True
         options.enable_intrusive_profiling = self.previous_enable_intrusive_profiling
         self.clean_up()
 
