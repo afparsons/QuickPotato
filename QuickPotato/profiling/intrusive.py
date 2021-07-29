@@ -1,11 +1,78 @@
 import random
 import string
-from functools import wraps, partial
+from functools import wraps, partial, update_wrapper
 from QuickPotato import performance_test
 from QuickPotato.configuration.management import options
 from QuickPotato.profiling.instrumentation import Profiler
-from QuickPotato.profiling.interpreters import StatisticsInterpreter
+# from QuickPotato.profiling.interpreters import StatisticsInterpreter
 from QuickPotato.utilities.exceptions import CouchPotatoCannotFindMethod
+
+from typing import *
+from .observer import Subject, Observer
+
+
+class PerformanceBreakpoint(Subject):
+
+    _observers: Set[Observer] = set()
+
+    def __init__(
+        self,
+        function: Callable,
+        enabled: bool = True,
+        execution_wrapper: Optional[Callable] = None,
+        *observers
+    ):
+        """
+        """
+        update_wrapper(self, function)
+        self.function: Callable = function
+        self.enabled: bool = enabled
+        self.execution_wrapper: Optional[Callable] = execution_wrapper
+        for observer in observers:
+            self.attach(observer)
+
+    def __call__(
+        self,
+        *args,
+        **kwargs
+    ):
+        """
+        """
+        if self.function is None:
+            return partial(PerformanceBreakpoint, enabled=self.enabled)
+
+        elif not callable(self.function):
+            raise CouchPotatoCannotFindMethod()
+
+        if (
+            self.enabled
+            and options.enable_intrusive_profiling
+        ):
+            self.sample_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+            self.profiler: Profiler = Profiler()
+
+            if self.execution_wrapper:
+                self.profiler.profile_method_under_test(
+                    self.execution_wrapper,
+                    partial(self.function, *args, **kwargs)
+                )
+            else:
+                self.profiler.profile_method_under_test(self.function, *args, **kwargs)
+
+            self.notify()
+            return self.profiler.functional_output
+        else:
+            return self.function(*args, **kwargs)
+
+    def attach(self, observer: Observer) -> None:
+        self._observers.add(observer)
+
+    def detach(self, observer: Observer) -> None:
+        self._observers.remove(observer)
+
+    def notify(self) -> None:
+        for observer in self._observers:
+            observer.update(self)
 
 
 def performance_breakpoint(method=None, enabled=True):

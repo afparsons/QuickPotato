@@ -11,6 +11,7 @@ import pandas as pd
 import numpy
 import json
 import os
+from pathlib import Path
 
 
 class FlameGraph(CodePaths):
@@ -53,9 +54,10 @@ class FlameGraph(CodePaths):
         :param path: The path on disk where the file needs to be written.
                      Example: C:\\temp\\
         """
-        if os.path.isdir(path):
-            name = f"FlameGraph-{self.test_case_name}-{datetime.now().timestamp()}"
-            with open(f"{path}{name}.html", 'a') as file:
+        path: Path = Path(path)
+        if path.is_dir():
+            name = f"FlameGraph-{self.test_case_name}-{datetime.now().timestamp()}.html"
+            with open(Path(path, name), 'a') as file:
                 file.write(self.html)
         else:
             raise UnableToExportVisualization()

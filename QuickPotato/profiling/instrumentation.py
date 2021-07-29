@@ -22,6 +22,8 @@ class Profiler(object):
         profiler = cProfile.Profile()
 
         # Start Profiling the method
+
+        # TODO: should this be time.perf_counter()?
         start_time = time()
         profiler.enable()
         self.functional_output = method(*args, **kwargs)
