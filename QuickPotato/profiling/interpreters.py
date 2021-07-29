@@ -1,15 +1,23 @@
-from QuickPotato.database.queries import Crud
-from QuickPotato.configuration.management import options
-from datetime import datetime
+"""
+TODO: module-level docstring
+"""
+
+# standard library
 import asyncio
-from typing import Generator, Dict, Union, Optional, Set, Tuple
+from datetime import datetime
 from functools import partial
-from .observer import Observer, Subject
-# from QuickPotato import performance_test
-# from QuickPotato.profiling.intrusive import PerformanceBreakpoint
 from abc import abstractmethod
+from typing import Generator, Dict, Union, Tuple
+
+# QuickPotato
+from QuickPotato.database.queries import Crud
+from QuickPotato.profiling.observer import Observer
+from QuickPotato.configuration.management import options
 
 
+# -----------------------------------------------------------------------------
+# CLASSES
+# -----------------------------------------------------------------------------
 class Interpreter(Observer):
 
     def __init__(
@@ -48,20 +56,28 @@ class Interpreter(Observer):
         raise NotImplemented
 
 
-class Obv(Interpreter):
+class SimpleInterpreter(Interpreter):
     def _update(self, subject) -> None:
-        print(f'{self.test_id=}')
+        """
+        Simply prints information stored by the PerformanceBreakpoint decorator.
+        """
+        print(
+            f'{self.test_id=}',
+            f'{self.sample_id=}',
+            f'{self.database_name=}',
+            f'{self.method_name=}',
+        )
 
 
 class StatisticsInterpreter(Crud, Interpreter):
 
     def _update(self, subject) -> None:
-
+        """
+        """
         self.performance_statistics: Dict = subject.profiler.performance_statistics
         self.total_response_time: float = subject.profiler.total_response_time
 
-        payload: Tuple[Dict[str, Union[str, int, float]]] = \
-            self.build_payload()
+        payload: Tuple[Dict[str, Union[str, int, float]]] = self.build_payload()
 
         if options.enable_asynchronous_payload_delivery:
             self.upload_payload_to_database_async(payload)
@@ -128,8 +144,6 @@ class StatisticsInterpreter(Crud, Interpreter):
         """
         :return:
         """
-        # payload: List[Dict[str, Union[str, int, float]]] = self.build_payload()
-
         # Dividing payload into multiple inserts to work around server-less variable restrictions
         len_payload: int = len(payload)
         if self.using_server_less_database and len_payload >= 999:

@@ -1,34 +1,38 @@
+"""
+TODO: module-level docstring
+"""
+
+# standard library
 import random
 import string
-from functools import wraps, partial, update_wrapper
+from functools import wraps, partial
+from typing import Callable, Optional, Set
+
+# QuickPotato
 from QuickPotato import performance_test
 from QuickPotato.configuration.management import options
+from QuickPotato.profiling.observer import Subject, Observer
 from QuickPotato.profiling.instrumentation import Profiler
-# from QuickPotato.profiling.interpreters import StatisticsInterpreter
 from QuickPotato.utilities.exceptions import CouchPotatoCannotFindMethod
 
-from typing import *
-from .observer import Subject, Observer
 
-
+# -----------------------------------------------------------------------------
+# DECORATORS
+# -----------------------------------------------------------------------------
 class PerformanceBreakpoint(Subject):
 
     _observers: Set[Observer] = set()
 
     def __init__(
         self,
-        # function: Callable,
         enabled: bool = True,
         database_name: str = performance_test.test_case_name,
         test_id: str = performance_test.current_test_id,
         execution_wrapper: Optional[Callable] = None,
         observers: Optional = None,
-    ):
+    ) -> None:
         """
         """
-        # update_wrapper(self, function)
-        # self.function: Callable = function
-        # print(f'{self.function=}')
         self.enabled: bool = enabled
         self.database_name: str = database_name
         self.test_id: str = test_id
@@ -40,10 +44,9 @@ class PerformanceBreakpoint(Subject):
     def __call__(
         self,
         function: Callable,
-        # *args,
-        # **kwargs
-    ):
+    ) -> Callable:
         """
+        TODO: ensure the decorator works when no arguments are provided
         """
         @wraps(function)
         def execute_function(*args, **kwargs):
@@ -67,7 +70,7 @@ class PerformanceBreakpoint(Subject):
             else:
                 return self.function(*args, **kwargs)
 
-        self.function: Callable = function
+        self.function: Optional[Callable] = function
 
         if self.function is None:
             return partial(PerformanceBreakpoint, enabled=self.enabled)
@@ -86,58 +89,3 @@ class PerformanceBreakpoint(Subject):
     def notify(self) -> None:
         for observer in self._observers:
             observer.update(self)
-
-
-# def performance_breakpoint(method=None, enabled=True):
-#     """
-#     This decorator can be used to gather performance statistical
-#     on a method.
-#     :param method: The method that is being profiled
-#     :param enabled: If True will profile the method under test
-#     :return: The method output
-#     """
-#     # ---------------------------------------------------------------------
-#
-#     @wraps(method)
-#     def method_execution(*args, **kwargs):
-#         """
-#         An inner function that Will execute the method under test and enable the profiler.
-#         It will work together with the Results class to formulate a list containing dictionary
-#         that will store all metrics in a database or csv file.
-#         :param args: The Arguments of the method under test
-#         :param kwargs: The key word arguments of the method under test
-#         :return: the methods results
-#         """
-#         if enabled and options.enable_intrusive_profiling:
-#
-#             sample_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-#             pf = Profiler()
-#             pf.profile_method_under_test(method, *args, **kwargs)
-#
-#             StatisticsInterpreter(
-#                 performance_statistics=pf.performance_statistics,
-#                 total_response_time=pf.total_response_time,
-#                 database_name=performance_test.test_case_name,
-#                 test_id=performance_test.current_test_id,
-#                 method_name=method.__name__,
-#                 sample_id=sample_id
-#             )
-#
-#             return pf.functional_output
-#
-#         else:
-#             return method(*args, **kwargs)
-#
-#     # ---------------------------------------------------------------------
-#
-#     if method is None:
-#         return partial(performance_breakpoint, enabled=enabled)
-#
-#     elif callable(method) is not True:
-#         raise CouchPotatoCannotFindMethod()
-#
-#     else:
-#         # Execute the method under test
-#         output = method_execution
-#
-#         return output

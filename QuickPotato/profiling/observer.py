@@ -1,4 +1,6 @@
 """
+Abstract classes for implementing the observer design pattern.
+
 https://refactoring.guru/design-patterns/observer/python/example
 """
 
@@ -51,9 +53,3 @@ class Observer(ABC):
         Receive update from subject.
         """
         raise NotImplementedError
-
-    # @abstractmethod
-    # def _update(self, *args, **kwargs) -> None:
-    #     """
-    #     """
-    #     raise NotImplementedError
