@@ -52,8 +52,8 @@ class Observer(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
-    def _update(self, *args, **kwargs) -> None:
-        """
-        """
-        raise NotImplementedError
+    # @abstractmethod
+    # def _update(self, *args, **kwargs) -> None:
+    #     """
+    #     """
+    #     raise NotImplementedError

@@ -5,8 +5,8 @@ import asyncio
 from typing import Generator, Dict, Union, Optional, Set, Tuple
 from functools import partial
 from .observer import Observer, Subject
-from QuickPotato import performance_test
-from QuickPotato.profiling.intrusive import PerformanceBreakpoint
+# from QuickPotato import performance_test
+# from QuickPotato.profiling.intrusive import PerformanceBreakpoint
 from abc import abstractmethod
 
 
@@ -16,8 +16,8 @@ class Interpreter(Observer):
         self,
         method_name: str,
         sample_id: str,
-        database_name: str = performance_test.test_case_name,
-        test_id: str = performance_test.current_test_id,
+        database_name: str,
+        test_id: str,
     ) -> None:
         """
         """
@@ -26,31 +26,36 @@ class Interpreter(Observer):
         self.sample_id = sample_id
         self.test_id = test_id
 
+        print(f'Interpreter, {self}')
+
     @classmethod
-    def update(cls, subject: PerformanceBreakpoint) -> None:
+    def update(cls, subject) -> None:
         """
         """
         if cls._instance is None:
-            cls._instance = Interpreter(
+            cls._instance = cls(
                 method_name=subject.function.__name__,
                 sample_id=subject.sample_id,
+                database_name=subject.database_name,
+                test_id=subject.test_id,
             )
+            cls._instance._update(subject)
         else:
             cls._instance._update(subject)
 
     @abstractmethod
-    def _update(self, subject: PerformanceBreakpoint) -> None:
+    def _update(self, subject) -> None:
         raise NotImplemented
 
 
 class Obv(Interpreter):
-    def _update(self, subject: PerformanceBreakpoint) -> None:
+    def _update(self, subject) -> None:
         print(f'{self.test_id=}')
 
 
 class StatisticsInterpreter(Crud, Interpreter):
 
-    def _update(self, subject: PerformanceBreakpoint) -> None:
+    def _update(self, subject) -> None:
 
         self.performance_statistics: Dict = subject.profiler.performance_statistics
         self.total_response_time: float = subject.profiler.total_response_time
@@ -67,8 +72,8 @@ class StatisticsInterpreter(Crud, Interpreter):
         self,
         method_name: str,
         sample_id: str,
-        database_name: str = performance_test.test_case_name,
-        test_id: str = performance_test.current_test_id,
+        database_name: str,
+        test_id: str,
     ) -> None:
         super(StatisticsInterpreter, self).__init__(
             method_name=method_name,
@@ -142,7 +147,7 @@ class StatisticsInterpreter(Crud, Interpreter):
 
     def iterate_through_profiled_stack(
         self,
-    ) -> Generator[Dict[str, Union[str, int, float]]]:
+    ) -> Generator[Dict[str, Union[str, int, float]], None, None]:
         """
 
         :return:

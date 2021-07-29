@@ -120,8 +120,8 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
             pf.profile_method_under_test(method, *arguments)
 
             StatisticsInterpreter(
-                performance_statistics=pf.performance_statistics,
-                total_response_time=pf.total_response_time,
+                # performance_statistics=pf.performance_statistics,
+                # total_response_time=pf.total_response_time,
                 database_name=self.test_case_name,
                 test_id=self.current_test_id,
                 method_name=method.__name__,
