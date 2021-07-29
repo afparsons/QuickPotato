@@ -64,6 +64,7 @@ class Create(ContextManager):
 
         :param database:
         """
+        print(f'  ... spawning test_report')
         self.create_schema(database, self.test_report_schema())
 
     def spawn_boundaries_test_evidence_schema(self, database):
@@ -388,6 +389,8 @@ class Crud(Create, Read, Update, Delete):
         -------
         When test id is found it will output True, if not it will output False
         """
+        print('check_if_test_id_exists_in_test_report', f'{database_name=}', f'{test_id=}')
+
         all_test_ids = self.select_validated_test_ids(
             database=database_name,
             number=options.max_number_saved_test_results - 1

@@ -69,6 +69,8 @@ class ContextManager(RawStatisticsSchemas, UnitPerformanceTestResultSchemas):
         :param schema:
         :return:
         """
+        print(f'{database=}')
+        print(f'{schema=}')
         engine = self.spawn_engine(database)
         schema.metadata.create_all(engine)
         engine.dispose()

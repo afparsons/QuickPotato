@@ -42,7 +42,7 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
         -------
             A raw data object that contains all benchmark measurements.
         """
-        return RawData(test_id=self.current_test_id, database_name=self._test_case_name)
+        return RawData(test_id=self.current_test_id, database_name=self._database_name)
 
     @property
     def baseline_measurements(self):
@@ -53,7 +53,7 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
         -------
             A raw data object that contains all baseline measurements.
         """
-        return RawData(test_id=self.previous_test_id, database_name=self._test_case_name)
+        return RawData(test_id=self.previous_test_id, database_name=self._database_name)
 
     @property
     def database_name(self):
@@ -182,10 +182,15 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
             The name of the database_name also known as the test case name
         """
         self.spawn_result_database(database_name)
+
         print(f'Calling spawn_performance_statistics_schema({database_name})')
         self.spawn_performance_statistics_schema(database_name)
         print(f'Called spawn_performance_statistics_schema({database_name})')
+
+        print(f'Calling spawn_test_report_schema({database_name})')
         self.spawn_test_report_schema(database_name)
+        print(f'Called spawn_test_report_schema({database_name})')
+
         self.spawn_boundaries_test_evidence_schema(database_name)
         self.spawn_regression_test_evidence_schema(database_name)
         self.enforce_test_result_retention_policy(database_name)
@@ -257,6 +262,7 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
         report = TestReport()
         report.test_id = self.current_test_id
         report.test_case_name = self._test_case_name
+        report.database_name = self._database_name
         report.epoch_timestamp = datetime.now().timestamp()
         report.human_timestamp = datetime.now()
 
@@ -283,7 +289,7 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
             True if the test passes and False if it False
         """
         results = []
-        self._collect_measurements(test_id=self.current_test_id, database_name=self._test_case_name)
+        self._collect_measurements(test_id=self.current_test_id, database_name=self._database_name)
         for boundary_key, measurements_key in zip(self.boundary_policy, self.threshold_measurements):
             if self.boundary_policy[boundary_key]["max"] is not None:
                 results.append(

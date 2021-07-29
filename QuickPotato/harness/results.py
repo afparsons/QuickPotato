@@ -77,6 +77,7 @@ class TestReport(Crud):
         super(TestReport, self).__init__()
 
         self.test_id = None
+        self.database_name = None
         self.test_case_name = None
         self.epoch_timestamp = None
         self.human_timestamp = None
@@ -101,12 +102,13 @@ class TestReport(Crud):
             "boundaries_breached": self.boundaries_breached,
             "regression_found": self.regression_found
         }
-        if self.check_if_test_id_exists_in_test_report(self.test_case_name, self.test_id):
+        if self.check_if_test_id_exists_in_test_report(self.database_name, self.test_id):
 
             # Update existing test results
-            return self.update_results_in_test_report(self.test_case_name, self.test_id, payload)
+            return self.update_results_in_test_report(self.database_name, self.test_id, payload)
 
         else:
 
             # Insert new test results
-            return self.insert_results_into_test_report(self.test_case_name, payload)
+            print(f'insert_results_into_test_report:', f'{self.database_name=}', f'{payload=}')
+            return self.insert_results_into_test_report(self.database_name, payload)

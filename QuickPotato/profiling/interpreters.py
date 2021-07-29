@@ -54,6 +54,7 @@ class Interpreter(Observer):
                 sample_id=subject.sample_id,
                 database_name=subject.database_name,
                 test_id=subject.test_id,
+                test_case_name=subject.test_case_name,
             )
             cls._instance._update(subject)
         else:
@@ -99,6 +100,7 @@ class StatisticsInterpreter(Crud, Interpreter):
         sample_id: str,
         database_name: str,
         test_id: str,
+        test_case_name: str,
     ) -> None:
 
         Crud.__init__(self)
@@ -107,15 +109,9 @@ class StatisticsInterpreter(Crud, Interpreter):
             method_name=method_name,
             sample_id=sample_id,
             database_name=database_name,
-            test_id=test_id
+            test_id=test_id,
+            test_case_name=test_case_name
         )
-
-        # super(StatisticsInterpreter, self).__init__(
-        #     method_name=method_name,
-        #     sample_id=sample_id,
-        #     database_name=database_name,
-        #     test_id=test_id
-        # )
 
         self.using_server_less_database = bool(self._validate_connection_url(database_name)[0:6] == "sqlite")
         self.epoch_timestamp = datetime.now().timestamp()
@@ -173,7 +169,7 @@ class StatisticsInterpreter(Crud, Interpreter):
                 )
         else:
             # Inserting full payload into server-based database
-            print('send_payload_to_database', f'{payload=}')
+            # print('send_payload_to_database', f'{self.database_name=}', f'{payload=}')
             self.insert_performance_statistics(
                 payload=payload,
                 database=self.database_name
