@@ -5,9 +5,8 @@ TODO: consider renaming "interpreters" to "listeners" or "handlers"
 # standard library
 import asyncio
 from datetime import datetime
-from functools import partial
 from abc import abstractmethod
-from typing import Generator, Dict, Union, Tuple
+from typing import Generator, Dict, Union, Tuple, Optional
 
 # QuickPotato
 from QuickPotato.database.queries import Crud
@@ -22,65 +21,44 @@ class Interpreter(Observer):
     """
     """
 
-    def __init__(
-        self,
-        method_name: str,
-        test_case_name: str,
-        database_name: str,
-    ) -> None:
+    def __init__(self) -> None:
         """
         """
-        self.database_name = database_name
-        self.test_case_name = test_case_name
-        self.method_name = method_name
+        self.database_name: Optional[str] = None
+        self.test_case_name: Optional[str] = None
+        self.method_name: Optional[str] = None
+        self.test_id: Optional[str] = None
+        self.sample_id: Optional[str] = None
+        self.performance_statistics: Optional[Dict] = None
+        self.total_response_time: Optional[float] = None
+        self.using_server_less_database: Optional[bool] = None
+        self.epoch_timestamp: Optional[float] = None
+        self.human_timestamp: Optional[datetime] = None
 
-    @classmethod
-    def update(cls, subject) -> None:
+    def _update_basics(self, subject) -> None:
         """
-        TODO: PROBLEM! Check how to properly scope cls._instance.
-            At the moment, any Interpreter subclass acts as a singleton.
-            For example:
-
-            >>> @PerformanceBreakpoint(observers=[SimpleInterpreter])
-            ...    def function_1()
-            ...        ...
-
-            >>> @PerformanceBreakpoint(observers=[SimpleInterpreter])
-            ...     def function_2()
-            ...         ...
-
-            >>> function_1()
-            # correct
-            self.method_name='function_1'
-
-            >>> function_2()
-            # incorrect
-            self.method_name='function_1'
         """
-        if cls._instance is None:
-            cls._instance = cls(
-                method_name=subject.function.__name__,
-                database_name=subject.database_name,
-                test_case_name=subject.test_case_name,
-            )
-            cls._instance._update(subject)
-        else:
-            cls._instance._update(subject)
+        self.test_id: str = subject.test_id
+        self.sample_id: str = subject.sample_id
+        self.method_name: str = subject.function.__name__
+        self.database_name: str = subject.database_name
+        self.test_case_name: str = subject.test_case_name
 
     @abstractmethod
-    def _update(self, subject) -> None:
+    def update(self, subject) -> None:
+        """
+        """
         raise NotImplemented
 
 
 class SimpleInterpreter(Interpreter):
 
-    def _update(self, subject) -> None:
+    def update(self, subject) -> None:
         """
         Simply prints information stored by the PerformanceBreakpoint decorator
         and the total response time from the subject's profiler.
         """
-        self.test_id = subject.test_id
-        self.sample_id: str = subject.sample_id
+        self._update_basics(subject)
 
         print(f'{self.__class__.__name__}')
         print(f' ├─ {self.method_name=}')
@@ -92,37 +70,28 @@ class SimpleInterpreter(Interpreter):
 
 class StatisticsInterpreter(Crud, Interpreter):
 
-    def _update(self, subject) -> None:
+    def update(self, subject) -> None:
         """
         """
-        self.test_id = subject.test_id
-        self.sample_id: str = subject.sample_id
+        self._update_basics(subject)
         self.performance_statistics: Dict = subject.profiler.performance_statistics
         self.total_response_time: float = subject.profiler.total_response_time
+
+        self.using_server_less_database: bool = bool(
+            self._validate_connection_url(self.database_name)[0:6] == "sqlite"
+        )
+        self.epoch_timestamp = datetime.now().timestamp()
+        self.human_timestamp = datetime.now()
 
         if options.enable_asynchronous_payload_delivery:
             self.upload_payload_to_database_async()
         else:
             self.upload_payload_to_database_sync()
 
-    def __init__(
-        self,
-        method_name: str,
-        database_name: str,
-        test_case_name: str,
-    ) -> None:
+    def __init__(self) -> None:
 
         Crud.__init__(self)
-        Interpreter.__init__(
-            self,
-            method_name=method_name,
-            database_name=database_name,
-            test_case_name=test_case_name
-        )
-
-        self.using_server_less_database = bool(self._validate_connection_url(database_name)[0:6] == "sqlite")
-        self.epoch_timestamp = datetime.now().timestamp()
-        self.human_timestamp = datetime.now()
+        Interpreter.__init__(self)
 
     def build_payload(self) -> Tuple[Dict[str, Union[str, int, float]]]:
         """

@@ -9,13 +9,14 @@ and explicitly profile that callable's execution.
 import random
 import string
 from functools import wraps, partial
-from typing import Callable, Optional, Set, Type
+from typing import Callable, Dict, Optional, Type
 
 # QuickPotato
 from QuickPotato import performance_test
 from QuickPotato.configuration.management import options
 from QuickPotato.profiling.instrumentation import Profiler
-from QuickPotato.profiling.observer import Observer, Subject
+from QuickPotato.profiling.interpreters import Interpreter
+from QuickPotato.profiling.observer import Subject
 from QuickPotato.utilities.exceptions import CouchPotatoCannotFindMethod
 
 
@@ -57,8 +58,13 @@ class PerformanceBreakpoint(Subject):
         self._test_case_name: str = test_case_name
         self._test_id: str = test_id
 
+        # set during execution
+        self.database_name: Optional[str] = None
+        self.test_case_name: Optional[str] = None
+        self.function: Optional[Callable] = None
+
         self.execution_wrapper: Optional[Callable] = execution_wrapper
-        self._observers: Set[Type[Observer]] = set()
+        self._observers: Dict[Type[Interpreter], Interpreter] = {}
         if observers:
             for observer in observers:
                 self.attach(observer)
@@ -108,11 +114,13 @@ class PerformanceBreakpoint(Subject):
 
         return execute_function
 
-    def attach(self, observer: Type[Observer]) -> None:
-        self._observers.add(observer)
+    def attach(self, observer: Type[Interpreter]) -> None:
+        self._observers[observer] = observer()
 
-    def detach(self, observer: Type[Observer]) -> None:
-        self._observers.remove(observer)
+    def detach(self, observer: Type[Interpreter]) -> Type[Interpreter]:
+        """
+        """
+        return self._observers.pop(observer)
 
     def notify(self) -> None:
         """
@@ -120,7 +128,7 @@ class PerformanceBreakpoint(Subject):
         Each observer must implement an `update(self, subject)` method.
         """
         try:
-            for observer in self._observers:
+            for observer in self._observers.values():
                 observer.update(self)
         except AttributeError as attribute_error:
             raise AttributeError(
