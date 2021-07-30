@@ -92,7 +92,7 @@ class StatisticsInterpreter(Crud, Interpreter):
         else:
             self.upload_payload_to_database_sync()
 
-    def build_payload(self) -> Tuple[Dict[str, Union[str, int, float]]]:
+    def build_payload(self) -> Tuple[Dict[str, Union[str, int, float, datetime]]]:
         """
         """
         return *self.iterate_through_profiled_stack(),
@@ -119,7 +119,7 @@ class StatisticsInterpreter(Crud, Interpreter):
         """
         :return:
         """
-        payload: Tuple[Dict[str, Union[str, int, float]]] = self.build_payload()
+        payload: Tuple[Dict[str, Union[str, int, float, datetime]]] = self.build_payload()
         # Dividing payload into multiple inserts to work around server-less variable restrictions
         len_payload: int = len(payload)
         if self.using_server_less_database and len_payload >= 999:
@@ -137,7 +137,7 @@ class StatisticsInterpreter(Crud, Interpreter):
 
     def iterate_through_profiled_stack(
         self,
-    ) -> Generator[Dict[str, Union[str, int, float]], None, None]:
+    ) -> Generator[Dict[str, Union[str, int, float, datetime]], None, None]:
         """
 
         :return:
