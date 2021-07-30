@@ -70,6 +70,10 @@ class SimpleInterpreter(Interpreter):
 
 class StatisticsInterpreter(Crud, Interpreter):
 
+    def __init__(self) -> None:
+        Crud.__init__(self)
+        Interpreter.__init__(self)
+
     def update(self, subject) -> None:
         """
         """
@@ -80,18 +84,13 @@ class StatisticsInterpreter(Crud, Interpreter):
         self.using_server_less_database: bool = bool(
             self._validate_connection_url(self.database_name)[0:6] == "sqlite"
         )
-        self.epoch_timestamp = datetime.now().timestamp()
-        self.human_timestamp = datetime.now()
+        self.epoch_timestamp: float = datetime.now().timestamp()
+        self.human_timestamp: datetime = datetime.now()
 
         if options.enable_asynchronous_payload_delivery:
             self.upload_payload_to_database_async()
         else:
             self.upload_payload_to_database_sync()
-
-    def __init__(self) -> None:
-
-        Crud.__init__(self)
-        Interpreter.__init__(self)
 
     def build_payload(self) -> Tuple[Dict[str, Union[str, int, float]]]:
         """
