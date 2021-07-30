@@ -13,6 +13,7 @@ class TestFlameGraphs(unittest.TestCase):
         """
 
         """
+        self._previous_enable_intrusive_profiling = options.enable_intrusive_profiling
         options.enable_intrusive_profiling = True
         # Making sure that the performance testing object is reset with -
         # new info and the quick profiling default test case.
@@ -22,7 +23,7 @@ class TestFlameGraphs(unittest.TestCase):
         """
 
         """
-        options.enable_intrusive_profiling = False
+        options.enable_intrusive_profiling = self._previous_enable_intrusive_profiling
         self.clean_up()
 
     @staticmethod
@@ -41,6 +42,7 @@ class TestFlameGraphs(unittest.TestCase):
         fast_method()
 
         # Verify if HTML contain the following tags
+        # TODO: is this supposed to fail? FlameGraph is not provided a test_id
         html = str(FlameGraph().html)
         self.assertIn("payload", html)
         self.assertIn("body", html)

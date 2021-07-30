@@ -15,7 +15,7 @@ class TestRegressionTesting(unittest.TestCase):
 
         """
         options.enable_policy_to_filter_out_invalid_test_ids = False
-        self.previous_enable_intrusive_profiling = options.enable_intrusive_profiling
+        self._previous_enable_intrusive_profiling = options.enable_intrusive_profiling
         options.enable_intrusive_profiling = True
 
     def tearDown(self):
@@ -23,7 +23,7 @@ class TestRegressionTesting(unittest.TestCase):
 
         """
         options.enable_policy_to_filter_out_invalid_test_ids = True
-        options.enable_intrusive_profiling = self.previous_enable_intrusive_profiling
+        options.enable_intrusive_profiling = self._previous_enable_intrusive_profiling
         self.clean_up()
 
     @staticmethod
@@ -68,6 +68,7 @@ class TestRegressionTesting(unittest.TestCase):
 
         print(f"Raw Response Times: {pt.benchmark_measurements.response_times()}")
         print(f"Average Response Time: {pt.benchmark_measurements.average_response_time()}")
+        print()
 
         return results
 

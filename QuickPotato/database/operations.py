@@ -1,10 +1,16 @@
-from QuickPotato.configuration.management import options
-from QuickPotato.database.schemas import RawStatisticsSchemas, UnitPerformanceTestResultSchemas
+"""
+"""
+
+# standard library
+from tempfile import gettempdir
 from sqlalchemy import create_engine
 from sqlalchemy.exc import ProgrammingError
-from QuickPotato.utilities.exceptions import DatabaseConnectionCannotBeSpawned, DatabaseSchemaCannotBeSpawned
 from sqlalchemy_utils import database_exists, create_database, drop_database
-import tempfile
+
+# QuickPotato
+from QuickPotato.configuration.management import options
+from QuickPotato.database.schemas import RawStatisticsSchemas, UnitPerformanceTestResultSchemas
+from QuickPotato.utilities.exceptions import DatabaseConnectionCannotBeSpawned, DatabaseSchemaCannotBeSpawned
 
 
 class ContextManager(RawStatisticsSchemas, UnitPerformanceTestResultSchemas):
@@ -69,8 +75,6 @@ class ContextManager(RawStatisticsSchemas, UnitPerformanceTestResultSchemas):
         :param schema:
         :return:
         """
-        print(f'{database=}')
-        print(f'{schema=}')
         engine = self.spawn_engine(database)
         schema.metadata.create_all(engine)
         engine.dispose()
@@ -107,17 +111,18 @@ class ContextManager(RawStatisticsSchemas, UnitPerformanceTestResultSchemas):
             drop_database(engine.url)
         return True
 
-    def _validate_connection_url(self, database_name):
+    def _validate_connection_url(self, database_name) -> str:
         """
         :return:
         """
+        # TODO: review whether f-strings are faster than concatenations in 2021 / Python 3.8
         if self.URL is None:
-            path = tempfile.gettempdir()
-            path = path + "\\" if '\\' in path else path + "/"
-            return "sqlite:///" + path + database_name + ".db"
+            path: str = gettempdir()
+            path: str = path + '\\' if '\\' in path else path + '/'
+            return 'sqlite:///' + path + database_name + '.db'
 
         elif options.connection_url.startswith('sqlite'):
-            return self.URL + database_name + ".db"
+            return self.URL + database_name + '.db'
 
         else:
-            return f"{self.URL}/{database_name}"
+            return self.URL + '/' + database_name

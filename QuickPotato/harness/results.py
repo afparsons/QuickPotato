@@ -7,6 +7,7 @@ class BoundariesTestEvidence(Crud):
         super(BoundariesTestEvidence, self).__init__()
 
         self.test_id = None
+        self.database_name = None
         self.test_case_name = None
         self.epoch_timestamp = None
         self.human_timestamp = None
@@ -33,7 +34,7 @@ class BoundariesTestEvidence(Crud):
             "value": self.value,
             "boundary": self.boundary
         }
-        return self.insert_boundaries_test_evidence(self.test_case_name, payload)
+        return self.insert_boundaries_test_evidence(self.database_name, payload)
 
 
 class RegressionTestEvidence(Crud):
@@ -42,6 +43,7 @@ class RegressionTestEvidence(Crud):
         super(RegressionTestEvidence, self).__init__()
 
         self.test_id = None
+        self.database_name = None
         self.test_case_name = None
         self.epoch_timestamp = None
         self.human_timestamp = None
@@ -68,7 +70,7 @@ class RegressionTestEvidence(Crud):
             "value": self.value,
             "critical_value": self.critical_value
         }
-        return self.insert_regression_test_evidence(self.test_case_name, payload)
+        return self.insert_regression_test_evidence(self.database_name, payload)
 
 
 class TestReport(Crud):
@@ -110,5 +112,4 @@ class TestReport(Crud):
         else:
 
             # Insert new test results
-            print(f'insert_results_into_test_report:', f'{self.database_name=}', f'{payload=}')
             return self.insert_results_into_test_report(self.database_name, payload)

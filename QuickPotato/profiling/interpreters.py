@@ -10,7 +10,6 @@ from abc import abstractmethod
 from typing import Generator, Dict, Union, Tuple
 
 # QuickPotato
-# from QuickPotato import performance_test
 from QuickPotato.database.queries import Crud
 from QuickPotato.profiling.observer import Observer
 from QuickPotato.configuration.management import options
@@ -27,33 +26,22 @@ class Interpreter(Observer):
         self,
         method_name: str,
         test_case_name: str,
-        sample_id: str,
         database_name: str,
-        test_id: str,
     ) -> None:
         """
         """
         self.database_name = database_name
         self.test_case_name = test_case_name
         self.method_name = method_name
-        self.sample_id = sample_id
-        self.test_id = test_id
-
-        print(f'Interpreter, {self}')
 
     @classmethod
     def update(cls, subject) -> None:
         """
         """
         if cls._instance is None:
-            # print('update()', f'{cls=}', f'{subject=}')
-            # print(f'{subject.function=}')
-            print(f'{subject.test_id=}')
             cls._instance = cls(
                 method_name=subject.function.__name__,
-                sample_id=subject.sample_id,
                 database_name=subject.database_name,
-                test_id=subject.test_id,
                 test_case_name=subject.test_case_name,
             )
             cls._instance._update(subject)
@@ -69,14 +57,18 @@ class SimpleInterpreter(Interpreter):
 
     def _update(self, subject) -> None:
         """
-        Simply prints information stored by the PerformanceBreakpoint decorator.
+        Simply prints information stored by the PerformanceBreakpoint decorator
+        and the total response time from the subject's profiler.
         """
-        print(
-            f'{self.test_id=}',
-            f'{self.sample_id=}',
-            f'{self.database_name=}',
-            f'{self.method_name=}',
-        )
+        self.test_id = subject.test_id
+        self.sample_id: str = subject.sample_id
+
+        print(f'{self.__class__.__name__}')
+        print(f' ├─ {self.method_name=}')
+        print(f' ├─ {self.test_id=}')
+        print(f' ├─ {self.sample_id=}')
+        print(f' ├─ {self.database_name=}')
+        print(f' ├─ {subject.profiler.total_response_time=}')
 
 
 class StatisticsInterpreter(Crud, Interpreter):
@@ -84,22 +76,20 @@ class StatisticsInterpreter(Crud, Interpreter):
     def _update(self, subject) -> None:
         """
         """
+        self.test_id = subject.test_id
+        self.sample_id: str = subject.sample_id
         self.performance_statistics: Dict = subject.profiler.performance_statistics
         self.total_response_time: float = subject.profiler.total_response_time
 
-        payload: Tuple[Dict[str, Union[str, int, float]]] = self.build_payload()
-
         if options.enable_asynchronous_payload_delivery:
-            self.upload_payload_to_database_async(payload)
+            self.upload_payload_to_database_async()
         else:
-            self.upload_payload_to_database_sync(payload)
+            self.upload_payload_to_database_sync()
 
     def __init__(
         self,
         method_name: str,
-        sample_id: str,
         database_name: str,
-        test_id: str,
         test_case_name: str,
     ) -> None:
 
@@ -107,9 +97,7 @@ class StatisticsInterpreter(Crud, Interpreter):
         Interpreter.__init__(
             self,
             method_name=method_name,
-            sample_id=sample_id,
             database_name=database_name,
-            test_id=test_id,
             test_case_name=test_case_name
         )
 
@@ -122,15 +110,13 @@ class StatisticsInterpreter(Crud, Interpreter):
         """
         return *self.iterate_through_profiled_stack(),
 
-    def upload_payload_to_database_async(
-        self,
-        payload: Tuple[Dict[str, Union[str, int, float]]],
-    ) -> None:
+    def upload_payload_to_database_async(self) -> None:
         """
         Returns
         -------
 
         """
+        payload: Tuple[Dict[str, Union[str, int, float]]] = self.build_payload()
         asyncio.set_event_loop(asyncio.new_event_loop())
         loop = asyncio.get_event_loop()
         loop.run_in_executor(
@@ -141,24 +127,19 @@ class StatisticsInterpreter(Crud, Interpreter):
             ),
         )
 
-    def upload_payload_to_database_sync(
-        self,
-        payload: Tuple[Dict[str, Union[str, int, float]]],
-    ) -> None:
+    def upload_payload_to_database_sync(self) -> None:
         """
         Returns
         -------
 
         """
-        self.send_payload_to_database(payload)
+        self.send_payload_to_database()
 
-    def send_payload_to_database(
-        self,
-        payload: Tuple[Dict[str, Union[str, int, float]]],
-    ) -> None:
+    def send_payload_to_database(self) -> None:
         """
         :return:
         """
+        payload: Tuple[Dict[str, Union[str, int, float]]] = self.build_payload()
         # Dividing payload into multiple inserts to work around server-less variable restrictions
         len_payload: int = len(payload)
         if self.using_server_less_database and len_payload >= 999:
@@ -169,7 +150,6 @@ class StatisticsInterpreter(Crud, Interpreter):
                 )
         else:
             # Inserting full payload into server-based database
-            # print('send_payload_to_database', f'{self.database_name=}', f'{payload=}')
             self.insert_performance_statistics(
                 payload=payload,
                 database=self.database_name
@@ -188,8 +168,7 @@ class StatisticsInterpreter(Crud, Interpreter):
             child_line_number = function[1]
             child_function_name = function[2]
 
-            len_callers: int = len(callers)
-            if len_callers == 0:
+            if len(callers) == 0:
                 if str(function[2]) == self.method_name:
                     yield {
                         "test_id": self.test_id,

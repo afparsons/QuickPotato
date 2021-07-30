@@ -1,8 +1,13 @@
-# from QuickPotato.profiling.intrusive import performance_breakpoint
+"""
+"""
+
+# standard library
+import math
+from time import sleep
+
+# QuickPotato
 from QuickPotato.profiling.intrusive import PerformanceBreakpoint
 from QuickPotato.profiling.interpreters import StatisticsInterpreter
-import time
-import math
 
 
 @PerformanceBreakpoint(observers=(StatisticsInterpreter,))
@@ -19,10 +24,10 @@ def fast_method():
 
 class FancyCode:
     """
-    A totally random piece of code used to examples quick profiling.
+    A totally random piece of code used to demonstrate quick profiling.
     """
 
-    # @performance_breakpoint <-- (Uncomment this line to use intrusive profiling by ways of the decorator)
+    # @PerformanceBreakpoint <-- (Uncomment this line to use intrusive profiling by ways of the decorator)
     def say_my_name_and_more(self, name):
         print(f"Your name is: {self.capitalize_name(name)}\n")
         print(f"The length of your name is: {self.length_of_name(name)}")
@@ -74,7 +79,7 @@ class FancyCode:
         :return: True because you waited :)
         """
         length = int(self.length_of_name(name))
-        time.sleep(length + 0.001)
+        sleep(length + 0.001)
         return True
 
     @staticmethod

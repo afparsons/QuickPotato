@@ -14,6 +14,7 @@ class TestPerformanceBoundaries(unittest.TestCase):
         """
 
         """
+        self._previous_enable_intrusive_profiling = options.enable_intrusive_profiling
         options.enable_intrusive_profiling = True
         options.enable_policy_to_filter_out_invalid_test_ids = False
 
@@ -21,7 +22,7 @@ class TestPerformanceBoundaries(unittest.TestCase):
         """
 
         """
-        options.enable_intrusive_profiling = False
+        options.enable_intrusive_profiling = self._previous_enable_intrusive_profiling
         options.enable_policy_to_filter_out_invalid_test_ids = True
         self.clean_up()
 

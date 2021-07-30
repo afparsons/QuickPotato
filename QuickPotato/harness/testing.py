@@ -126,14 +126,6 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
             self.profiler.profile_method_under_test(method, *arguments)
             self.function = method
             self.test_id = self.current_test_id
-            # StatisticsInterpreter(
-            #     # performance_statistics=pf.performance_statistics,
-            #     # total_response_time=pf.total_response_time,
-            #     database_name=self.test_case_name,
-            #     test_id=self.current_test_id,
-            #     method_name=method.__name__,
-            #     sample_id=sample_id
-            # )
             StatisticsInterpreter.update(self)
 
     def measure_method_performance(self, method, arguments=None, iteration=1, pacing=0, processes=0, wind_up=0):
@@ -182,15 +174,8 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
             The name of the database_name also known as the test case name
         """
         self.spawn_result_database(database_name)
-
-        print(f'Calling spawn_performance_statistics_schema({database_name})')
         self.spawn_performance_statistics_schema(database_name)
-        print(f'Called spawn_performance_statistics_schema({database_name})')
-
-        print(f'Calling spawn_test_report_schema({database_name})')
         self.spawn_test_report_schema(database_name)
-        print(f'Called spawn_test_report_schema({database_name})')
-
         self.spawn_boundaries_test_evidence_schema(database_name)
         self.spawn_regression_test_evidence_schema(database_name)
         self.enforce_test_result_retention_policy(database_name)
@@ -245,7 +230,7 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
         """
         if len(results) == 0:
             if self.silence_warning_messages is False:
-                print("Warning no test have been executed against the benchmark")
+                print("Warning: No tests have been executed against the benchmark")
             return True
 
         elif False in results:
@@ -296,6 +281,7 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
                     check_max_boundary_of_measurement(
                         test_id=self.current_test_id,
                         test_case_name=self._test_case_name,
+                        database_name=self._database_name,
                         validation_name="validate_max_boundary_for_" + measurements_key,
                         boundary=self.boundary_policy[boundary_key]["max"],
                         value=self.threshold_measurements[measurements_key]())
@@ -305,6 +291,7 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
                     check_min_boundary_of_measurement(
                         test_id=self.current_test_id,
                         test_case_name=self._test_case_name,
+                        database_name=self._database_name,
                         validation_name="validate_min_boundary_for_" + measurements_key,
                         boundary=self.boundary_policy[boundary_key]["min"],
                         value=self.threshold_measurements[measurements_key]())
@@ -332,6 +319,7 @@ class PerformanceTest(Crud, Boundaries, Metrics, RegressionSettings):
                 t_test = TTest(
                     test_id=self.current_test_id,
                     test_case_name=self._test_case_name,
+                    database_name=self.database_name,
                     baseline_measurements=self.baseline_measurements.response_times(),
                     benchmark_measurements=self.benchmark_measurements.response_times()
                 )
