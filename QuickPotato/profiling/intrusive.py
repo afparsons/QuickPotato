@@ -73,19 +73,15 @@ class PerformanceBreakpoint(Subject):
         def execute_function(*args, **kwargs):
             """
             """
-            self.test_id = self._test_id or performance_test.current_test_id
-            self.test_case_name = self._test_case_name or performance_test.test_case_name
-            self.database_name = self._database_name or performance_test.database_name
+            if (
+                self.enabled
+                and self._observers
+                and options.enable_intrusive_profiling
+            ):
+                self.test_id = self._test_id or performance_test.current_test_id
+                self.test_case_name = self._test_case_name or performance_test.test_case_name
+                self.database_name = self._database_name or performance_test.database_name
 
-            # print(f'{performance_test.__dict__["current_test_id"]=}')
-            # print(f'exec: {self}')
-            # print(f'  ...  {self.test_id=}')
-            # print(f'  ...  {self.database_name=}')
-            # print(f'  ...  {self._observers=}')
-            # print(f'  ...  {function=}')
-            # print()
-
-            if self.enabled and options.enable_intrusive_profiling:
                 self.sample_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
                 self.profiler = Profiler()
 
