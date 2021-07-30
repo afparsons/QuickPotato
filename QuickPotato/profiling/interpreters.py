@@ -37,6 +37,25 @@ class Interpreter(Observer):
     @classmethod
     def update(cls, subject) -> None:
         """
+        TODO: PROBLEM! Check how to properly scope cls._instance.
+            At the moment, any Interpreter subclass acts as a singleton.
+            For example:
+
+            >>> @PerformanceBreakpoint(observers=[SimpleInterpreter])
+            ...    def function_1()
+            ...        ...
+
+            >>> @PerformanceBreakpoint(observers=[SimpleInterpreter])
+            ...     def function_2()
+            ...         ...
+
+            >>> function_1()
+            # correct
+            self.method_name='function_1'
+
+            >>> function_2()
+            # incorrect
+            self.method_name='function_1'
         """
         if cls._instance is None:
             cls._instance = cls(
@@ -116,16 +135,9 @@ class StatisticsInterpreter(Crud, Interpreter):
         -------
 
         """
-        payload: Tuple[Dict[str, Union[str, int, float]]] = self.build_payload()
         asyncio.set_event_loop(asyncio.new_event_loop())
         loop = asyncio.get_event_loop()
-        loop.run_in_executor(
-            executor=None,
-            func=partial(
-                self.send_payload_to_database,
-                payload,
-            ),
-        )
+        loop.run_in_executor(executor=None, func=self.send_payload_to_database)
 
     def upload_payload_to_database_sync(self) -> None:
         """
