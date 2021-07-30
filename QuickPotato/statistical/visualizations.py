@@ -57,6 +57,7 @@ class FlameGraph(CodePaths):
         Export the flame graph as a HTML report on disk.
         :param path: The path on disk where the file needs to be written.
                      Example: C:\\temp\\
+        TODO: consider the case when the path includes the `~` user home alias.
         """
         path: Path = Path(path)
         if path.is_dir():

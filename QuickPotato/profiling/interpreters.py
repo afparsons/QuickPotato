@@ -64,6 +64,7 @@ class SimpleInterpreter(Interpreter):
         print(f' ├─ {self.method_name=}')
         print(f' ├─ {self.test_id=}')
         print(f' ├─ {self.sample_id=}')
+        print(f' ├─ {self.test_case_name=}')
         print(f' ├─ {self.database_name=}')
         print(f' ├─ {subject.profiler.total_response_time=}')
 
