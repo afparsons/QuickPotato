@@ -126,7 +126,7 @@ class PerformanceBreakpoint(Subject):
             raise CouchPotatoCannotFindMethod()
 
         if self.execution_wrapper:
-            return self.execution_wrapper(execute_function)
+            return self.execution_wrapper(update_wrapper(execute_function, function))
         return execute_function
 
     def attach(self, observer: Type[Interpreter]) -> None:
