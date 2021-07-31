@@ -112,21 +112,23 @@ class PerformanceBreakpoint(Subject):
 
         self.function: Optional[Callable] = function
 
-        logging.error(f'{self.function=}')
-        logging.error(f'{self.execution_wrapper=}')
+        raise Exception(
+            f'{self.function=} /// {self.execution_wrapper=} /// {execute_function}'
+        )
+
+        logging.info(f'{self.function=}')
+        logging.info(f'{self.execution_wrapper=}')
 
         if self.function is None:
-            logging.error(f'Returning partial')
-            return update_wrapper(
-                partial(PerformanceBreakpoint, enabled=self.enabled),
-                PerformanceBreakpoint,
-            )
+            logging.info(f'Returning partial')
+            return partial(PerformanceBreakpoint, enabled=self.enabled)
 
         elif not callable(self.function):
             raise CouchPotatoCannotFindMethod()
 
         if self.execution_wrapper:
-            return self.execution_wrapper(update_wrapper(execute_function, function))
+            logging.info(f'Running self.execution_wrapper')
+            return self.execution_wrapper(execute_function)
         return execute_function
 
     def attach(self, observer: Type[Interpreter]) -> None:
