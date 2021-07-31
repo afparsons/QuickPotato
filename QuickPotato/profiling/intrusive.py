@@ -106,6 +106,9 @@ class PerformanceBreakpoint(Subject):
 
         self.function: Optional[Callable] = function
 
+        print(f'{self.function=}')
+        print(f'{self.execution_wrapper=}')
+
         if self.function is None:
             return partial(PerformanceBreakpoint, enabled=self.enabled)
 
