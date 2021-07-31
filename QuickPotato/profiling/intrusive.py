@@ -112,10 +112,6 @@ class PerformanceBreakpoint(Subject):
 
         self.function: Optional[Callable] = function
 
-        # raise Exception(
-        #     f'{self.function=} /// {self.execution_wrapper=} /// {execute_function}'
-        # )
-
         logging.info(f'{self.function=}')
         logging.info(f'{self.execution_wrapper=}')
         logging.info(f'{execute_function=}')
