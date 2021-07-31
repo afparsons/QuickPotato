@@ -8,7 +8,7 @@ and explicitly profile that callable's execution.
 # standard library
 import random
 import string
-from functools import wraps, partial
+from functools import wraps, partial, update_wrapper
 from typing import Callable, Dict, Optional, Type
 
 # QuickPotato
@@ -112,11 +112,15 @@ class PerformanceBreakpoint(Subject):
 
         self.function: Optional[Callable] = function
 
-        logging.info(f'{self.function=}')
-        logging.info(f'{self.execution_wrapper=}')
+        logging.error(f'{self.function=}')
+        logging.error(f'{self.execution_wrapper=}')
 
         if self.function is None:
-            return partial(PerformanceBreakpoint, enabled=self.enabled)
+            logging.error(f'Returning partial')
+            return update_wrapper(
+                partial(PerformanceBreakpoint, enabled=self.enabled),
+                PerformanceBreakpoint,
+            )
 
         elif not callable(self.function):
             raise CouchPotatoCannotFindMethod()
