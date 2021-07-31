@@ -19,6 +19,12 @@ from QuickPotato.profiling.interpreters import Interpreter
 from QuickPotato.profiling.observer import Subject
 from QuickPotato.utilities.exceptions import CouchPotatoCannotFindMethod
 
+import logging
+logging.basicConfig(
+    format='[QuickPotato] [%(levelname)s]: %(message)s',
+    level=logging.INFO
+)
+
 
 # -----------------------------------------------------------------------------
 # DECORATORS
@@ -106,8 +112,8 @@ class PerformanceBreakpoint(Subject):
 
         self.function: Optional[Callable] = function
 
-        print(f'{self.function=}')
-        print(f'{self.execution_wrapper=}')
+        logging.info(f'{self.function=}')
+        logging.info(f'{self.execution_wrapper=}')
 
         if self.function is None:
             return partial(PerformanceBreakpoint, enabled=self.enabled)
