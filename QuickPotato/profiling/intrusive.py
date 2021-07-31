@@ -81,7 +81,7 @@ class PerformanceBreakpoint(Subject):
     ) -> Callable:
         """
         """
-        # @wraps(function)
+        @wraps(function)
         def execute_function(*args, **kwargs):
             """
             """
@@ -111,10 +111,6 @@ class PerformanceBreakpoint(Subject):
                 return self.function(*args, **kwargs)
 
         self.function: Optional[Callable] = function
-
-        logging.info(f'{self.function=}')
-        logging.info(f'{self.execution_wrapper=}')
-        logging.info(f'{execute_function=}')
 
         if self.function is None:
             logging.info(f'Returning partial')
