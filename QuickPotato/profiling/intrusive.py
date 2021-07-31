@@ -91,13 +91,13 @@ class PerformanceBreakpoint(Subject):
                 self.sample_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
                 self.profiler = Profiler()
 
-                if self.execution_wrapper:
-                    self.profiler.profile_method_under_test(
-                        self.execution_wrapper,
-                        partial(self.function, *args, **kwargs)
-                    )
-                else:
-                    self.profiler.profile_method_under_test(self.function, *args, **kwargs)
+                # if self.execution_wrapper:
+                #     self.profiler.profile_method_under_test(
+                #         self.execution_wrapper,
+                #         partial(self.function, *args, **kwargs)
+                #     )
+                # else:
+                self.profiler.profile_method_under_test(self.function, *args, **kwargs)
 
                 self.notify()
                 return self.profiler.functional_output
@@ -112,6 +112,8 @@ class PerformanceBreakpoint(Subject):
         elif not callable(self.function):
             raise CouchPotatoCannotFindMethod()
 
+        if self.execution_wrapper:
+            return self.execution_wrapper(execute_function)
         return execute_function
 
     def attach(self, observer: Type[Interpreter]) -> None:
