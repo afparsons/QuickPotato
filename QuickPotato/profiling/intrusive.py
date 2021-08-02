@@ -110,22 +110,17 @@ class PerformanceBreakpoint(Subject):
             else:
                 return self.function(*args, **kwargs)
 
-        logging.info(f'Before: {execute_function.__annotations__=}')
         update_wrapper(execute_function, function)
-        logging.info(f'After: {execute_function.__annotations__=}')
 
         self.function: Optional[Callable] = function
 
         if self.function is None:
-            logging.info(f'Returning partial')
             return partial(PerformanceBreakpoint, enabled=self.enabled)
 
         elif not callable(self.function):
             raise CouchPotatoCannotFindMethod()
 
         if self.execution_wrapper:
-            logging.info(f'Executing: {execute_function.__annotations__=}')
-            logging.info(f'Running self.execution_wrapper')
             return self.execution_wrapper(execute_function)
         return execute_function
 
