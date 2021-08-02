@@ -110,7 +110,9 @@ class PerformanceBreakpoint(Subject):
             else:
                 return self.function(*args, **kwargs)
 
+        logging.info(f'Before: {execute_function.__annotations__=}')
         update_wrapper(execute_function, function)
+        logging.info(f'After: {execute_function.__annotations__=}')
 
         self.function: Optional[Callable] = function
 
@@ -122,8 +124,8 @@ class PerformanceBreakpoint(Subject):
             raise CouchPotatoCannotFindMethod()
 
         if self.execution_wrapper:
+            logging.info(f'Executing: {execute_function.__annotations__=}')
             logging.info(f'Running self.execution_wrapper')
-            logging.info(f'{execute_function.__annotations__=}')
             return self.execution_wrapper(execute_function)
         return execute_function
 
