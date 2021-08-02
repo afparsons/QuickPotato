@@ -110,6 +110,8 @@ class PerformanceBreakpoint(Subject):
             else:
                 return self.function(*args, **kwargs)
 
+        update_wrapper(execute_function, function)
+
         self.function: Optional[Callable] = function
 
         if self.function is None:
@@ -121,7 +123,7 @@ class PerformanceBreakpoint(Subject):
 
         if self.execution_wrapper:
             logging.info(f'Running self.execution_wrapper')
-            update_wrapper(execute_function, function)
+            logging.info(f'{execute_function.__annotations__=}')
             return self.execution_wrapper(execute_function)
         return execute_function
 
